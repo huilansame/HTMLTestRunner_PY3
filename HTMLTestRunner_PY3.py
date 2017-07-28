@@ -625,7 +625,7 @@ class _TestResult(TestResult):
                 errors = self.failures
                 errors.append((subtest, self._exc_info_to_string(err, subtest)))
                 output = self.complete_output()
-                self.result.append((1, subtest, output + '\nSubTestCase Failed:\n' + str(subtest),
+                self.result.append((1, test, output + '\nSubTestCase Failed:\n' + str(subtest),
                                     self._exc_info_to_string(err, subtest)))
                 if self.verbosity > 1:
                     sys.stderr.write('F  ')
@@ -639,7 +639,7 @@ class _TestResult(TestResult):
                 errors.append((subtest, self._exc_info_to_string(err, subtest)))
                 output = self.complete_output()
                 self.result.append(
-                    (2, subtest, output + '\nSubTestCase Error:\n' + str(subtest), self._exc_info_to_string(err, subtest)))
+                    (2, test, output + '\nSubTestCase Error:\n' + str(subtest), self._exc_info_to_string(err, subtest)))
                 if self.verbosity > 1:
                     sys.stderr.write('E  ')
                     sys.stderr.write(str(subtest))
@@ -652,7 +652,7 @@ class _TestResult(TestResult):
             self.subtestlist.append(test)
             self.success_count += 1
             output = self.complete_output()
-            self.result.append((0, subtest, output + '\nSubTestCase Pass:\n' + str(subtest), ''))
+            self.result.append((0, test, output + '\nSubTestCase Pass:\n' + str(subtest), ''))
             if self.verbosity > 1:
                 sys.stderr.write('ok ')
                 sys.stderr.write(str(subtest))
