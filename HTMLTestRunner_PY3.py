@@ -68,7 +68,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 __author__ = "Wai Yip Tung"
 __version__ = "0.9.1"
 
-
 """
 Change History
 Version 0.9.1
@@ -404,7 +403,7 @@ class Template_mixin(object):
         top: 0px;
         /*border: solid #627173 1px; */
         padding: 10px;
-        background-color: #E6E6D6;
+        /*background-color: #E6E6D6; */
         font-family: "Lucida Console", "Courier New", Courier, monospace;
         text-align: left;
         font-size: 8pt;
@@ -422,13 +421,13 @@ class Template_mixin(object):
     }
     #header_row {
         font-weight: bold;
-        color: white;
-        background-color: #777;
+        color: #303641;
+        background-color: #ebebeb;
     }
     #total_row  { font-weight: bold; }
-    .passClass  { background-color: #74A474; }
-    .failClass  { background-color: #FDD283; }
-    .errorClass { background-color: #FF6600; }
+    .passClass  { background-color: #bdedbc; }
+    .failClass  { background-color: #ffefa4; }
+    .errorClass { background-color: #ffc9c9; }
     .passCase   { color: #6c6; }
     .failCase   { color: #FF6600; font-weight: bold; }
     .errorCase  { color: #c00; font-weight: bold; }
@@ -529,10 +528,6 @@ class Template_mixin(object):
         %(status)s</a>
 
     <div id='div_%(tid)s' class="popup_window">
-        <div style='text-align: right; color:red;cursor:pointer'>
-        <a onfocus='this.blur();' onclick="document.getElementById('div_%(tid)s').style.display = 'none' " >
-           [x]</a>
-        </div>
         <pre>
         %(script)s
         </pre>
