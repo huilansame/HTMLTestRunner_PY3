@@ -66,14 +66,20 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # URL: http://tungwaiyip.info/software/HTMLTestRunner.html
 
 __author__ = "Wai Yip Tung"
-__version__ = "0.8.3"
+__version__ = "0.9.1"
 
 
 """
 Change History
+Version 0.9.1
+* 用Echarts添加执行情况统计图 (灰蓝)
+
+Version 0.9.0
+* 改成Python 3.x (灰蓝)
+
 Version 0.8.3
-* Use Bootstrap (Zhang Xin)
-* Change to Chinese (Zhang Xin)
+* 使用 Bootstrap稍加美化 (灰蓝)
+* 改为中文 (灰蓝)
 
 Version 0.8.2
 * Show output inline instead of popup window (Viorel Lupu).
@@ -131,9 +137,9 @@ stdout_redirector = OutputRedirector(sys.stdout)
 stderr_redirector = OutputRedirector(sys.stderr)
 
 
-
 # ----------------------------------------------------------------------
 # Template
+
 
 class Template_mixin(object):
     """
@@ -176,9 +182,9 @@ class Template_mixin(object):
     """
 
     STATUS = {
-    0: u'通过',
-    1: u'失败',
-    2: u'错误',
+        0: u'通过',
+        1: u'失败',
+        2: u'错误',
     }
 
     DEFAULT_TITLE = 'Unit Test Report'
@@ -196,114 +202,160 @@ class Template_mixin(object):
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     %(stylesheet)s
     <link href="http://cdn.bootcss.com/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <script type="text/javascript" src="js/echarts.common.min.js"></script>
 </head>
 <body>
-<script language="javascript" type="text/javascript"><!--
-output_list = Array();
+    <script language="javascript" type="text/javascript"><!--
+    output_list = Array();
 
-/* level - 0:Summary; 1:Failed; 2:All */
-function showCase(level) {
-    trs = document.getElementsByTagName("tr");
-    for (var i = 0; i < trs.length; i++) {
-        tr = trs[i];
-        id = tr.id;
-        if (id.substr(0,2) == 'ft') {
-            if (level < 1) {
-                tr.className = 'hiddenRow';
+    /* level - 0:Summary; 1:Failed; 2:All */
+    function showCase(level) {
+        trs = document.getElementsByTagName("tr");
+        for (var i = 0; i < trs.length; i++) {
+            tr = trs[i];
+            id = tr.id;
+            if (id.substr(0,2) == 'ft') {
+                if (level < 1) {
+                    tr.className = 'hiddenRow';
+                }
+                else {
+                    tr.className = '';
+                }
             }
-            else {
-                tr.className = '';
-            }
-        }
-        if (id.substr(0,2) == 'pt') {
-            if (level > 1) {
-                tr.className = '';
-            }
-            else {
-                tr.className = 'hiddenRow';
+            if (id.substr(0,2) == 'pt') {
+                if (level > 1) {
+                    tr.className = '';
+                }
+                else {
+                    tr.className = 'hiddenRow';
+                }
             }
         }
     }
-}
 
 
-function showClassDetail(cid, count) {
-    var id_list = Array(count);
-    var toHide = 1;
-    for (var i = 0; i < count; i++) {
-        tid0 = 't' + cid.substr(1) + '.' + (i+1);
-        tid = 'f' + tid0;
-        tr = document.getElementById(tid);
-        if (!tr) {
-            tid = 'p' + tid0;
+    function showClassDetail(cid, count) {
+        var id_list = Array(count);
+        var toHide = 1;
+        for (var i = 0; i < count; i++) {
+            tid0 = 't' + cid.substr(1) + '.' + (i+1);
+            tid = 'f' + tid0;
             tr = document.getElementById(tid);
+            if (!tr) {
+                tid = 'p' + tid0;
+                tr = document.getElementById(tid);
+            }
+            id_list[i] = tid;
+            if (tr.className) {
+                toHide = 0;
+            }
         }
-        id_list[i] = tid;
-        if (tr.className) {
-            toHide = 0;
+        for (var i = 0; i < count; i++) {
+            tid = id_list[i];
+            if (toHide) {
+                document.getElementById('div_'+tid).style.display = 'none'
+                document.getElementById(tid).className = 'hiddenRow';
+            }
+            else {
+                document.getElementById(tid).className = '';
+            }
         }
     }
-    for (var i = 0; i < count; i++) {
-        tid = id_list[i];
-        if (toHide) {
-            document.getElementById('div_'+tid).style.display = 'none'
-            document.getElementById(tid).className = 'hiddenRow';
+
+
+    function showTestDetail(div_id){
+        var details_div = document.getElementById(div_id)
+        var displayState = details_div.style.display
+        // alert(displayState)
+        if (displayState != 'block' ) {
+            displayState = 'block'
+            details_div.style.display = 'block'
         }
         else {
-            document.getElementById(tid).className = '';
+            details_div.style.display = 'none'
         }
     }
-}
 
 
-function showTestDetail(div_id){
-    var details_div = document.getElementById(div_id)
-    var displayState = details_div.style.display
-    // alert(displayState)
-    if (displayState != 'block' ) {
-        displayState = 'block'
-        details_div.style.display = 'block'
+    function html_escape(s) {
+        s = s.replace(/&/g,'&amp;');
+        s = s.replace(/</g,'&lt;');
+        s = s.replace(/>/g,'&gt;');
+        return s;
     }
-    else {
-        details_div.style.display = 'none'
+
+    /* obsoleted by detail in <div>
+    function showOutput(id, name) {
+        var w = window.open("", //url
+                        name,
+                        "resizable,scrollbars,status,width=800,height=450");
+        d = w.document;
+        d.write("<pre>");
+        d.write(html_escape(output_list[id]));
+        d.write("\n");
+        d.write("<a href='javascript:window.close()'>close</a>\n");
+        d.write("</pre>\n");
+        d.close();
     }
-}
+    */
+    --></script>
 
-
-function html_escape(s) {
-    s = s.replace(/&/g,'&amp;');
-    s = s.replace(/</g,'&lt;');
-    s = s.replace(/>/g,'&gt;');
-    return s;
-}
-
-/* obsoleted by detail in <div>
-function showOutput(id, name) {
-    var w = window.open("", //url
-                    name,
-                    "resizable,scrollbars,status,width=800,height=450");
-    d = w.document;
-    d.write("<pre>");
-    d.write(html_escape(output_list[id]));
-    d.write("\n");
-    d.write("<a href='javascript:window.close()'>close</a>\n");
-    d.write("</pre>\n");
-    d.close();
-}
-*/
---></script>
-<div id="div_base">
-
-%(heading)s
-%(report)s
-%(ending)s
-
-</div>
+    <div id="div_base">
+        %(heading)s
+        %(report)s
+        %(ending)s
+        %(chart_script)s
+    </div>
 </body>
 </html>
-"""
-    # variables: (title, generator, stylesheet, heading, report, ending)
+"""  # variables: (title, generator, stylesheet, heading, report, ending, chart_script)
 
+    ECHARTS_SCRIPT = """
+    <script type="text/javascript">
+        // 基于准备好的dom，初始化echarts实例
+        var myChart = echarts.init(document.getElementById('chart'));
+
+        // 指定图表的配置项和数据
+        var option = {
+            title : {
+                text: '测试执行情况',
+                x:'center'
+            },
+            tooltip : {
+                trigger: 'item',
+                formatter: "{a} <br/>{b} : {c} ({d}%%)"
+            },
+            legend: {
+                orient: 'vertical',
+                left: 'left',
+                data: ['通过','失败','错误']
+            },
+            series : [
+                {
+                    name: '测试执行情况',
+                    type: 'pie',
+                    radius : '60%%',
+                    center: ['50%%', '60%%'],
+                    data:[
+                        {value:%(Pass)s, name:'通过'},
+                        {value:%(fail)s, name:'失败'},
+                        {value:%(error)s, name:'错误'}
+                    ],
+                    itemStyle: {
+                        emphasis: {
+                            shadowBlur: 10,
+                            shadowOffsetX: 0,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                        }
+                    }
+                }
+            ]
+        };
+
+        // 使用刚指定的配置项和数据显示图表。
+        myChart.setOption(option);
+    </script>
+    """  # variables: (Pass, fail, error)
 
     # ------------------------------------------------------------------------
     # Stylesheet
@@ -313,163 +365,159 @@ function showOutput(id, name) {
 
     STYLESHEET_TMPL = """
 <style type="text/css" media="screen">
-body        { font-family: verdana, arial, helvetica, sans-serif; font-size: 80%; }
-table       { font-size: 100%; }
-pre         { white-space: pre-wrap;word-wrap: break-word; }
+    body        { font-family: verdana, arial, helvetica, sans-serif; font-size: 80%; }
+    table       { font-size: 100%; }
+    pre         { white-space: pre-wrap;word-wrap: break-word; }
 
-/* -- heading ---------------------------------------------------------------------- */
-h1 {
-	font-size: 16pt;
-	color: gray;
-}
-.heading {
-    margin-top: 0ex;
-    margin-bottom: 1ex;
-}
+    /* -- heading ---------------------------------------------------------------------- */
+    h1 {
+        font-size: 16pt;
+        color: gray;
+    }
+    .heading {
+        margin-top: 0ex;
+        margin-bottom: 1ex;
+    }
 
-.heading .attribute {
-    margin-top: 1ex;
-    margin-bottom: 0;
-}
+    .heading .attribute {
+        margin-top: 1ex;
+        margin-bottom: 0;
+    }
 
-.heading .description {
-    margin-top: 2ex;
-    margin-bottom: 3ex;
-}
+    .heading .description {
+        margin-top: 2ex;
+        margin-bottom: 3ex;
+    }
 
-/* -- css div popup ------------------------------------------------------------------------ */
-a.popup_link {
-}
+    /* -- css div popup ------------------------------------------------------------------------ */
+    a.popup_link {
+    }
 
-a.popup_link:hover {
-    color: red;
-}
+    a.popup_link:hover {
+        color: red;
+    }
 
-.popup_window {
-    display: none;
-    position: relative;
-    left: 0px;
-    top: 0px;
-    /*border: solid #627173 1px; */
-    padding: 10px;
-    background-color: #E6E6D6;
-    font-family: "Lucida Console", "Courier New", Courier, monospace;
-    text-align: left;
-    font-size: 8pt;
-    /* width: 500px;*/
-}
+    .popup_window {
+        display: none;
+        position: relative;
+        left: 0px;
+        top: 0px;
+        /*border: solid #627173 1px; */
+        padding: 10px;
+        background-color: #E6E6D6;
+        font-family: "Lucida Console", "Courier New", Courier, monospace;
+        text-align: left;
+        font-size: 8pt;
+        /* width: 500px;*/
+    }
 
-}
-/* -- report ------------------------------------------------------------------------ */
-#show_detail_line {
-    margin-top: 3ex;
-    margin-bottom: 1ex;
-}
-#result_table {
-    width: 99%;
-}
-#header_row {
-    font-weight: bold;
-    color: white;
-    background-color: #777;
-}
-#total_row  { font-weight: bold; }
-.passClass  { background-color: #74A474; }
-.failClass  { background-color: #FDD283; }
-.errorClass { background-color: #FF6600; }
-.passCase   { color: #6c6; }
-.failCase   { color: #FF6600; font-weight: bold; }
-.errorCase  { color: #c00; font-weight: bold; }
-.hiddenRow  { display: none; }
-.testcase   { margin-left: 2em; }
+    }
+    /* -- report ------------------------------------------------------------------------ */
+    #show_detail_line {
+        margin-top: 3ex;
+        margin-bottom: 1ex;
+    }
+    #result_table {
+        width: 99%;
+    }
+    #header_row {
+        font-weight: bold;
+        color: white;
+        background-color: #777;
+    }
+    #total_row  { font-weight: bold; }
+    .passClass  { background-color: #74A474; }
+    .failClass  { background-color: #FDD283; }
+    .errorClass { background-color: #FF6600; }
+    .passCase   { color: #6c6; }
+    .failCase   { color: #FF6600; font-weight: bold; }
+    .errorCase  { color: #c00; font-weight: bold; }
+    .hiddenRow  { display: none; }
+    .testcase   { margin-left: 2em; }
 
 
-/* -- ending ---------------------------------------------------------------------- */
-#ending {
-}
+    /* -- ending ---------------------------------------------------------------------- */
+    #ending {
+    }
 
-#div_base {
-            position:absolute;
-            top:0%;
-            left:5%;
-            right:5%;
-            width: auto;
-            height: auto;
-            margin: -15px 0 0 0;
-}
+    #div_base {
+                position:absolute;
+                top:0%;
+                left:5%;
+                right:5%;
+                width: auto;
+                height: auto;
+                margin: -15px 0 0 0;
+    }
 </style>
 """
-
-
 
     # ------------------------------------------------------------------------
     # Heading
     #
 
-    HEADING_TMPL = """<div class='page-header'>
-<h1>%(title)s</h1>
-%(parameters)s
-</div>
-<p class='description'>%(description)s</p>
-
-""" # variables: (title, parameters, description)
+    HEADING_TMPL = """
+    <div class='page-header'>
+        <h1>%(title)s</h1>
+    %(parameters)s
+    </div>
+    <div style="float: left;width:50%%;"><p class='description'>%(description)s</p></div>
+    <div id="chart" style="width:50%%;height:400px;float:left;"></div>
+"""  # variables: (title, parameters, description)
 
     HEADING_ATTRIBUTE_TMPL = """<p class='attribute'><strong>%(name)s:</strong> %(value)s</p>
-""" # variables: (name, value)
-
-
+"""  # variables: (name, value)
 
     # ------------------------------------------------------------------------
     # Report
     #
 
     REPORT_TMPL = u"""
-<div class="btn-group btn-group-sm">
-<button class="btn btn-default" onclick='javascript:showCase(0)'>总结</button>
-<button class="btn btn-default" onclick='javascript:showCase(1)'>失败</button>
-<button class="btn btn-default" onclick='javascript:showCase(2)'>全部</button>
-</div>
-<p></p>
-<table id='result_table' class="table table-bordered">
-<colgroup>
-<col align='left' />
-<col align='right' />
-<col align='right' />
-<col align='right' />
-<col align='right' />
-<col align='right' />
-</colgroup>
-<tr id='header_row'>
-    <td>测试套件/测试用例</td>
-    <td>总数</td>
-    <td>通过</td>
-    <td>失败</td>
-    <td>错误</td>
-    <td>查看</td>
-</tr>
-%(test_list)s
-<tr id='total_row'>
-    <td>总计</td>
-    <td>%(count)s</td>
-    <td>%(Pass)s</td>
-    <td>%(fail)s</td>
-    <td>%(error)s</td>
-    <td>&nbsp;</td>
-</tr>
-</table>
-""" # variables: (test_list, count, Pass, fail, error)
+    <div class="btn-group btn-group-sm">
+        <button class="btn btn-default" onclick='javascript:showCase(0)'>总结</button>
+        <button class="btn btn-default" onclick='javascript:showCase(1)'>失败</button>
+        <button class="btn btn-default" onclick='javascript:showCase(2)'>全部</button>
+    </div>
+    <p></p>
+    <table id='result_table' class="table table-bordered">
+        <colgroup>
+            <col align='left' />
+            <col align='right' />
+            <col align='right' />
+            <col align='right' />
+            <col align='right' />
+            <col align='right' />
+        </colgroup>
+        <tr id='header_row'>
+            <td>测试套件/测试用例</td>
+            <td>总数</td>
+            <td>通过</td>
+            <td>失败</td>
+            <td>错误</td>
+            <td>查看</td>
+        </tr>
+        %(test_list)s
+        <tr id='total_row'>
+            <td>总计</td>
+            <td>%(count)s</td>
+            <td>%(Pass)s</td>
+            <td>%(fail)s</td>
+            <td>%(error)s</td>
+            <td>&nbsp;</td>
+        </tr>
+    </table>
+"""  # variables: (test_list, count, Pass, fail, error)
 
     REPORT_CLASS_TMPL = u"""
-<tr class='%(style)s'>
-    <td>%(desc)s</td>
-    <td>%(count)s</td>
-    <td>%(Pass)s</td>
-    <td>%(fail)s</td>
-    <td>%(error)s</td>
-    <td><a href="javascript:showClassDetail('%(cid)s',%(count)s)">详情</a></td>
-</tr>
-""" # variables: (style, desc, count, Pass, fail, error, cid)
-
+    <tr class='%(style)s'>
+        <td>%(desc)s</td>
+        <td>%(count)s</td>
+        <td>%(Pass)s</td>
+        <td>%(fail)s</td>
+        <td>%(error)s</td>
+        <td><a href="javascript:showClassDetail('%(cid)s',%(count)s)">详情</a></td>
+    </tr>
+"""  # variables: (style, desc, count, Pass, fail, error, cid)
 
     REPORT_TEST_WITH_OUTPUT_TMPL = r"""
 <tr id='%(tid)s' class='%(Class)s'>
@@ -493,22 +541,16 @@ a.popup_link:hover {
 
     </td>
 </tr>
-""" # variables: (tid, Class, style, desc, status)
-
+"""  # variables: (tid, Class, style, desc, status)
 
     REPORT_TEST_NO_OUTPUT_TMPL = r"""
 <tr id='%(tid)s' class='%(Class)s'>
     <td class='%(style)s'><div class='testcase'>%(desc)s</div></td>
     <td colspan='5' align='center'>%(status)s</td>
 </tr>
-""" # variables: (tid, Class, style, desc, status)
+"""  # variables: (tid, Class, style, desc, status)
 
-
-    REPORT_TEST_OUTPUT_TMPL = r"""
-%(id)s: %(output)s
-""" # variables: (id, output)
-
-
+    REPORT_TEST_OUTPUT_TMPL = r"""%(id)s: %(output)s"""  # variables: (id, output)
 
     # ------------------------------------------------------------------------
     # ENDING
@@ -520,6 +562,7 @@ a.popup_link:hover {
 
 
 TestResult = unittest.TestResult
+
 
 class _TestResult(TestResult):
     # note: _TestResult is a pure representation of results.
@@ -544,7 +587,6 @@ class _TestResult(TestResult):
         self.result = []
         self.subtestlist = []
 
-
     def startTest(self, test):
         TestResult.startTest(self, test)
         # just one buffer for both stdout and stderr
@@ -555,7 +597,6 @@ class _TestResult(TestResult):
         self.stderr0 = sys.stderr
         sys.stdout = stdout_redirector
         sys.stderr = stderr_redirector
-
 
     def complete_output(self):
         """
@@ -569,13 +610,11 @@ class _TestResult(TestResult):
             self.stderr0 = None
         return self.outputBuffer.getvalue()
 
-
     def stopTest(self, test):
         # Usually one of addSuccess, addError or addFailure would have been called.
         # But there are some path in unittest that would bypass this.
         # We must disconnect stdout in stopTest(), which is guaranteed to be called.
         self.complete_output()
-
 
     def addSuccess(self, test):
         if test not in self.subtestlist:
@@ -662,8 +701,7 @@ class _TestResult(TestResult):
 
 
 class HTMLTestRunner(Template_mixin):
-    """
-    """
+
     def __init__(self, stream=sys.stdout, verbosity=1, title=None, description=None):
         self.stream = stream
         self.verbosity = verbosity
@@ -678,7 +716,6 @@ class HTMLTestRunner(Template_mixin):
 
         self.startTime = datetime.datetime.now()
 
-
     def run(self, test):
         "Run the given test case or test suite."
         result = _TestResult(self.verbosity)
@@ -687,7 +724,6 @@ class HTMLTestRunner(Template_mixin):
         self.generateReport(test, result)
         print('\nTime Elapsed: %s' % (self.stopTime-self.startTime), file=sys.stderr)
         return result
-
 
     def sortResult(self, result_list):
         # unittest does not seems to run in any particular order.
@@ -703,7 +739,6 @@ class HTMLTestRunner(Template_mixin):
         r = [(cls, rmap[cls]) for cls in classes]
         return r
 
-
     def getReportAttributes(self, result):
         """
         Return report attributes as a list of (name, value).
@@ -712,9 +747,9 @@ class HTMLTestRunner(Template_mixin):
         startTime = str(self.startTime)[:19]
         duration = str(self.stopTime - self.startTime)
         status = []
-        if result.success_count: status.append(u'通过 %s'    % result.success_count)
+        if result.success_count: status.append(u'通过 %s' % result.success_count)
         if result.failure_count: status.append(u'失败 %s' % result.failure_count)
-        if result.error_count:   status.append(u'错误 %s'   % result.error_count  )
+        if result.error_count:   status.append(u'错误 %s' % result.error_count  )
         if status:
             status = ' '.join(status)
         else:
@@ -725,7 +760,6 @@ class HTMLTestRunner(Template_mixin):
             (u'状态', status),
         ]
 
-
     def generateReport(self, test, result):
         report_attrs = self.getReportAttributes(result)
         generator = 'HTMLTestRunner %s' % __version__
@@ -733,6 +767,7 @@ class HTMLTestRunner(Template_mixin):
         heading = self._generate_heading(report_attrs)
         report = self._generate_report(result)
         ending = self._generate_ending()
+        chart = self._generate_chart(result)
         output = self.HTML_TMPL % dict(
             title = saxutils.escape(self.title),
             generator = generator,
@@ -740,21 +775,20 @@ class HTMLTestRunner(Template_mixin):
             heading = heading,
             report = report,
             ending = ending,
+            chart_script = chart
         )
         self.stream.write(output.encode('utf8'))
 
-
     def _generate_stylesheet(self):
         return self.STYLESHEET_TMPL
-
 
     def _generate_heading(self, report_attrs):
         a_lines = []
         for name, value in report_attrs:
             line = self.HEADING_ATTRIBUTE_TMPL % dict(
-                    name = saxutils.escape(name),
-                    value = saxutils.escape(value),
-                )
+                name = saxutils.escape(name),
+                value = saxutils.escape(value),
+            )
             a_lines.append(line)
         heading = self.HEADING_TMPL % dict(
             title = saxutils.escape(self.title),
@@ -762,7 +796,6 @@ class HTMLTestRunner(Template_mixin):
             description = saxutils.escape(self.description),
         )
         return heading
-
 
     def _generate_report(self, result):
         rows = []
@@ -806,6 +839,13 @@ class HTMLTestRunner(Template_mixin):
         )
         return report
 
+    def _generate_chart(self, result):
+        chart = self.ECHARTS_SCRIPT % dict(
+            Pass=str(result.success_count),
+            fail=str(result.failure_count),
+            error=str(result.error_count),
+        )
+        return chart
 
     def _generate_report_test(self, rows, cid, tid, n, t, o, e):
         # e.g. 'pt1.1', 'ft1.1', etc

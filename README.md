@@ -1,6 +1,18 @@
 # HTMLTestRunner_PY3
 
-基于之前对PY2版本HTMLTestRunner的修改（中文以及美化），现在针对PY3做了修改，增加对subTest的支持
+## 2017.09.08 统计图 0.9.1
+
+用Echarts添加了一个统计图，如下图：
+
+![测试执行情况统计图](./img/echarts.png)
+
+需要echarts的js文件 `echarts.common.min.js` ，在报告文件夹下创建文件夹 `js` ，将该文件放入，生成报告就能看到该报告中的图表
+
+![新添加js目录](./img/report.png)
+
+## 2017.08 修改为PY3版本 0.9.0
+
+基于之前对PY2版本HTMLTestRunner的修改（中文以及美化，[链接点我](http://download.csdn.net/download/huilan_same/9598558)），现在针对PY3做了修改，增加对subTest的支持
 
 1. StringIO -> io
 2. 去掉decode
