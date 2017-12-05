@@ -6,9 +6,11 @@
 
 ![测试执行情况统计图](./img/echarts.png)
 
-需要echarts的js文件 `echarts.common.min.js` ，在报告文件夹下创建文件夹 `js` ，将该文件放入，生成报告就能看到该报告中的图表
+**（2017.12.05）修改为使用cdn的方式，不用建文件夹导入js。**
 
-![新添加js目录](./img/report.png)
+~~需要echarts的js文件 `echarts.common.min.js` ，在报告文件夹下创建文件夹 `js` ，将该文件放入，生成报告就能看到该报告中的图表~~
+
+~~![新添加js目录](./img/report.png)~~
 
 ## 2017.08 修改为PY3版本 0.9.0
 
