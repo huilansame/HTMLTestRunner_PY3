@@ -325,6 +325,7 @@ class Template_mixin(object):
                 trigger: 'item',
                 formatter: "{a} <br/>{b} : {c} ({d}%%)"
             },
+            color: ['#95b75d', 'grey', '#b64645'],
             legend: {
                 orient: 'vertical',
                 left: 'left',
