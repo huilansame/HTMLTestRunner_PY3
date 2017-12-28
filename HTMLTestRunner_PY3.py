@@ -199,10 +199,13 @@ class Template_mixin(object):
     <title>%(title)s</title>
     <meta name="generator" content="%(generator)s"/>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-    %(stylesheet)s
+    
     <link href="http://cdn.bootcss.com/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.bootcss.com/echarts/3.8.5/echarts.common.min.js"></script>
     <!-- <script type="text/javascript" src="js/echarts.common.min.js"></script> -->
+    
+    %(stylesheet)s
+    
 </head>
 <body>
     <script language="javascript" type="text/javascript"><!--
@@ -366,7 +369,7 @@ class Template_mixin(object):
 
     STYLESHEET_TMPL = """
 <style type="text/css" media="screen">
-    body        { font-family: verdana, arial, helvetica, sans-serif; font-size: 80%; }
+    body        { font-family: Microsoft YaHei,Consolas,arial,sans-serif; font-size: 80%; }
     table       { font-size: 100%; }
     pre         { white-space: pre-wrap;word-wrap: break-word; }
 
@@ -530,9 +533,7 @@ class Template_mixin(object):
         %(status)s</a>
 
     <div id='div_%(tid)s' class="popup_window">
-        <pre>
-        %(script)s
-        </pre>
+        <pre>%(script)s</pre>
     </div>
     <!--css div popup end-->
 
